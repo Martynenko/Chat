@@ -121,5 +121,12 @@ public class RoomsActivity extends BaseActivity {
 		// TODO Auto-generated method stub
 		
 	}
+ 
+	@Override
+	public void onBackPressed(){
+		//android.os.Process.killProcess(android.os.Process.myPid());
+		stopSystem();
+		super.onBackPressed();
+	}
 
 }

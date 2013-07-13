@@ -25,23 +25,21 @@ public class Api {
 	private boolean isAuth = false;
 
 	public void reg(Person p) {
-		connect("http://10.2.1.27:6606/reg?email=" + p.mEmail + "&pass=" + p.mPass + "&sex=" + p.mSex + "&age=" + p.mAge + "&nick=" + p.mNickname);
+		connect(BASE_URL+"reg?" + p.mEmail + "&pass=" + p.mPass + "&sex=" + p.mSex + "&age=" + p.mAge + "&nick=" + p.mNickname);
 
 	}
 
 	public void auth(String email, String pass) throws ApiException {
 		if (isAuth == false) {
-			isAuth = true;
 
 			try {
-				String resp = connect("http://10.2.1.27:6606/auth?email=" + email + "&pass=" + pass);
+				String resp = connect(BASE_URL +"auth?email=" + email + "&pass=" + pass);
 				mAuthInfo = Parser.Auth(resp);
+				isAuth = true;
 			} catch (Exception e) {
-
 				throw new ApiException(e);
 
 			}
-
 		} else {
 			throw new ApiException("Already logged in!");
 		}
@@ -119,7 +117,7 @@ public class Api {
 		}
 	}
 
-	private static final String BASE_URL = "http://10.2.1.10:6606/";
+	private static final String BASE_URL = "http://10.2.1.38:6606/";
 	
 //	public List<Room> getRooms(){
 //		connect (BASE_URL+"rooms?token="+mAuthInfo.mToken);

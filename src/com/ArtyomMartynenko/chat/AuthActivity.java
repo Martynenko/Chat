@@ -78,6 +78,7 @@ public class AuthActivity extends BaseActivity {
 			startActivity(i);
 			finish();
 		} catch (ApiException e) {
+			e.printStackTrace();
 			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
 
 		}

@@ -32,4 +32,10 @@ public class ChatService extends Service {
 		}
 
 	}
+	
+	public void onDestroy(){
+		
+		mApi=null;
+		super.onDestroy();
+	}
 }

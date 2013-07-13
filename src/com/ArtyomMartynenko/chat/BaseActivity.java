@@ -11,12 +11,13 @@ import android.os.IBinder;
 public abstract class BaseActivity extends Activity {
 	protected ChatService mCore;
 	private ServiceConnection mSrvConn;
+	private Intent mIntent;
 
 	protected void onCreate(Bundle b) {
 		super.onCreate(b);
-		Intent intent = new Intent();
-		intent.setClass(this, ChatService.class);
-		startService(intent);
+		mIntent = new Intent();
+		mIntent.setClass(this, ChatService.class);
+		startService(mIntent);
 		mSrvConn = new ServiceConnection() {
 
 			@Override
@@ -33,7 +34,7 @@ public abstract class BaseActivity extends Activity {
 				mCore = ((ChatService.SelfBinder) service).srv;
 			}
 		};
-		bindService(intent, mSrvConn, Service.BIND_AUTO_CREATE);
+		bindService(mIntent, mSrvConn, Service.BIND_AUTO_CREATE);
 	}
 	
 	public void onDestroy(){
@@ -43,6 +44,11 @@ public abstract class BaseActivity extends Activity {
 		
 	}
 	abstract protected void onConnectedToService();
+	
+	protected final void stopSystem(){
+		stopService(mIntent);
+		
+	}
 	
 }
 // showDialog(1);
