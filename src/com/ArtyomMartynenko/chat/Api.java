@@ -12,6 +12,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import android.os.Handler;
 import android.util.Log;
 
 import com.ArtyomMartynenko.chat.AuthInfo;
@@ -22,27 +23,50 @@ import com.ArtyomMartynenko.chat.Api.ApiException;
 public class Api {
 
 	private AuthInfo mAuthInfo;
-	private boolean isAuth = false;
+	private boolean misAuth = false;
+	private final Object mSyncObject = new Object();
+	private final Handler mHandler = new Handler();
 
 	public void reg(Person p) {
-		connect(BASE_URL+"reg?" + p.mEmail + "&pass=" + p.mPass + "&sex=" + p.mSex + "&age=" + p.mAge + "&nick=" + p.mNickname);
+		connect(BASE_URL + "reg?" + p.mEmail + "&pass=" + p.mPass + "&sex=" + p.mSex + "&age=" + p.mAge + "&nick=" + p.mNickname);
 
 	}
 
-	public void auth(String email, String pass) throws ApiException {
-		if (isAuth == false) {
+	public void auth(final String email, final String pass, final AuthCallback callback) {
+		synchronized (mSyncObject) {
 
-			try {
-				String resp = connect(BASE_URL +"auth?email=" + email + "&pass=" + pass);
-				mAuthInfo = Parser.Auth(resp);
-				isAuth = true;
-			} catch (Exception e) {
-				throw new ApiException(e);
+			if (misAuth) {
+				callback.onAuthCallbackFail("Already Authed");
+			}
+		}
+		Thread thread = new Thread("AuthThread") {
+			@Override
+			public void run() {
+				try {
+					String resp = connect(BASE_URL + "auth?email=" + email + "&pass=" + pass);
+					mAuthInfo = Parser.Auth(resp);
+					misAuth = true;
+					callback.onAuthCallbackSucces(); // уведомили обработчик
+														// (слушателей), что
+														// авторизация прошла
+														// успешно
+				} catch (final Exception e) {
+					// callback.onAuthCallbackFail(e.getMessage());
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							callback.onAuthCallbackFail(e.getMessage());
+
+						}
+
+					});
+
+				}
 
 			}
-		} else {
-			throw new ApiException("Already logged in!");
-		}
+
+		};
+		thread.start();
 	}
 
 	public static String connect(String url) {
@@ -117,13 +141,21 @@ public class Api {
 		}
 	}
 
-	private static final String BASE_URL = "http://10.2.1.38:6606/";
-	
-//	public List<Room> getRooms(){
-//		connect (BASE_URL+"rooms?token="+mAuthInfo.mToken);
-//		List<Room>list = new ArrayList<Room>
-//		String jsonResp=connect("http://10.2.1.10:6606/");
-//		Parser.getRooms(jsonResp,list);
-//		return list;
-//		}
+	private static final String BASE_URL = "http://10.2.1.12:6606/";
+
+	// public List<Room> getRooms(){
+	// connect (BASE_URL+"rooms?token="+mAuthInfo.mToken);
+	// List<Room>list = new ArrayList<Room>
+	// String jsonResp=connect("http://10.2.1.10:6606/");
+	// Parser.getRooms(jsonResp,list);
+	// return list;
+	// }
+	public interface AuthCallback {
+		// первое событие, когда авторизация проходит успешно
+		public void onAuthCallbackSucces();
+
+		// авторизация не проходит
+		public void onAuthCallbackFail(String message);
+
+	}
 }

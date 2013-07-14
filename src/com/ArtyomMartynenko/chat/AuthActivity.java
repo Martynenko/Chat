@@ -21,10 +21,10 @@ public class AuthActivity extends BaseActivity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_auth);
 		findViewById(R.id.login).setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
-				onClickEnter(v);		
+				onClickEnter(v);
 			}
 		});
 
@@ -71,17 +71,26 @@ public class AuthActivity extends BaseActivity {
 	public void onClickEnter(View view) {
 		EditText Email = (EditText) findViewById(R.id.email);
 		EditText Password = (EditText) findViewById(R.id.password);
-		try {
-			mCore.getApi().auth(Email.getText().toString(), Password.getText().toString());
-			//Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show();
-			Intent i = new Intent(this, RoomsActivity.class);
-			startActivity(i);
-			finish();
-		} catch (ApiException e) {
-			e.printStackTrace();
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
 
-		}
+		mCore.getApi().auth(Email.getText().toString(), Password.getText().toString(), new Api.AuthCallback() {
+
+			@Override
+			public void onAuthCallbackSucces() {
+				// TODO Auto-generated method stub
+				Intent i = new Intent(AuthActivity.this, RoomsActivity.class);
+				startActivity(i);
+				finish();
+
+			}
+
+			@Override
+			public void onAuthCallbackFail(String message) {
+				// TODO Auto-generated method stub
+
+				Toast.makeText(AuthActivity.this, message, Toast.LENGTH_LONG).show();
+			}
+		});
+		// Toast.makeText(this, "OK", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
